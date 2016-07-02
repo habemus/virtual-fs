@@ -1,0 +1,24 @@
+{
+  "name": "h-fs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.1",
+    "cpr": "^1.1.2",
+    "rimraf": "^2.5.2",
+    "vroot": "git+ssh://git@bitbucket.org/habemus-tutti/vroot.git"
+  },
+  "devDependencies": {
+    "fs-extra": "^0.30.0",
+    "gulp": "^3.9.1",
+    "gulp-istanbul": "^1.0.0",
+    "gulp-mocha": "^2.2.0",
+    "should": "^9.0.2"
+  }
+}
