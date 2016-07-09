@@ -67,18 +67,46 @@ describe('HFS#move', function () {
           .should.equal('file-1 contents');
       });
   });
+
+  it('should require fromPath as the first argument', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.move('', 'another-path')
+      .catch((err) => {
+        err.name.should.equal('InvalidOption');
+        err.option.should.equal('fromPath');
+        err.kind.should.equal('required');
+      });
+  });
+
+  it('should require toPath as the second argument', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.move('/file-1', '')
+      .catch((err) => {
+        err.name.should.equal('InvalidOption');
+        err.option.should.equal('toPath');
+        err.kind.should.equal('required');
+      });
+  });
   
-  it('should emit a `file-moved` event upon succesfully moving a file', function () {
+  it('should emit a `file-removed` and a `file-created` event upon succesfully moving a file', function () {
 
     var hfs = createHFs(TMP_PATH);
 
-    var EMITTED = false;
-    hfs.on('file-moved', function (data) {
-      Object.keys(data).length.should.equal(2);
-      data.fromPath.should.equal('/file-1');
-      data.toPath.should.equal('/another-file');
+    var EMITTED_REMOVED = false;
+    var EMITTED_CREATED = false;
+    hfs.on('file-removed', function (data) {
+      Object.keys(data).length.should.equal(1);
+      data.path.should.equal('/file-1');
       
-      EMITTED = true;
+      EMITTED_REMOVED = true;
+    });
+    hfs.on('file-created', function (data) {
+      Object.keys(data).length.should.equal(1);
+      data.path.should.equal('/another-file');
+
+      EMITTED_CREATED = true;
     });
 
     return hfs.move('/file-1', '/another-file')
@@ -105,8 +133,8 @@ describe('HFS#move', function () {
 
         return new Bluebird((resolve, reject) => {          
           setTimeout(function () {
-            should(EMITTED).equal(true);
-
+            should(EMITTED_REMOVED).equal(true);
+            should(EMITTED_CREATED).equal(true);
             resolve();
           }, 400);
         });
@@ -141,18 +169,25 @@ describe('HFS#move', function () {
       })
   });
 
-  it('should emit a `directory-moved` upon successfully moving a directory', function () {
+  it('should emit a `directory-removed` and a `directory-created` event upon successfully moving a directory', function () {
     
     var hfs = createHFs(TMP_PATH);
 
-    var EMITTED = false;
-    hfs.on('directory-moved', function (data) {
-      Object.keys(data).length.should.equal(2);
+    var EMITTED_REMOVED = false;
+    var EMITTED_CREATED = false;
+    hfs.on('directory-removed', function (data) {
+      Object.keys(data).length.should.equal(1);
       
-      data.fromPath.should.equal('/dir-1/dir-11');
-      data.toPath.should.equal('/another-dir');
+      data.path.should.equal('/dir-1/dir-11');
       
-      EMITTED = true;
+      EMITTED_REMOVED = true;
+    });
+    hfs.on('directory-created', function (data) {
+      Object.keys(data).length.should.equal(1);
+
+      data.path.should.equal('/another-dir');
+
+      EMITTED_CREATED = true;
     });
     
     return hfs.move('dir-1/dir-11', '/another-dir')
@@ -179,7 +214,8 @@ describe('HFS#move', function () {
 
         return new Bluebird((resolve, reject) => {
           setTimeout(function () {
-            should(EMITTED).equal(true);
+            should(EMITTED_REMOVED).equal(true);
+            should(EMITTED_CREATED).equal(true);
             resolve();
           }, 400);
         });
