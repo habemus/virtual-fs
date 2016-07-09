@@ -111,15 +111,15 @@ describe('HFs create methods', function () {
       var hfs = createHFs(TMP_PATH);
 
       // create a file on the directory
-      fse.ensureDirSync(TMP_PATH + '/somedir');
+      fse.ensureDirSync(TMP_PATH + '/some-existing-dir');
 
-      return hfs.createFile('somedir')
+      return hfs.createFile('some-existing-dir')
         .then(() => {
           throw new Error('expected error');
         })
         .catch((err) => {
           err.name.should.equal('PathExists');
-          err.path.should.equal('/somedir');
+          err.path.should.equal('/some-existing-dir');
         });
     });
   });
@@ -184,16 +184,21 @@ describe('HFs create methods', function () {
 
       var hfs = createHFs(TMP_PATH);
 
-      // ensure some file athe the target path
-      fse.ensureFileSync(TMP_PATH + '/somedir');
+      // TODO: investigate weird behavior
+      // when trying to create a directory or file that exists
+      // that emits a delayed file-add and file-remove events
+      // to the fs watcher.
 
-      return hfs.createDirectory('somedir')
+      // ensure some file athe the target path
+      fse.ensureFileSync(TMP_PATH + '/some-existing-dir');
+
+      return hfs.createDirectory('some-existing-dir')
         .then(() => {
           throw new Error('expected error');
         })
         .catch((err) => {
           err.name.should.equal('PathExists');
-          err.path.should.equal('/somedir');
+          err.path.should.equal('/some-existing-dir');
         });
     });
   });

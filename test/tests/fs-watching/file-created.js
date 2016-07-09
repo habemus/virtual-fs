@@ -44,12 +44,13 @@ function allEventsBut(evList) {
 describe('HFs watcher event propagation', function () {
 
   beforeEach(function () {
+    this.timeout(3000);
     fse.emptyDirSync(TMP_PATH);
 
-    // wait 500 ms before starting test so
-    // that operations of the beforeEach hook do not
-    // interfere with tests
-    return wait(500);
+    // wait 2000 ms before starting test so
+    // that operations of the beforeEach hook and of other tests 
+    // do not interfere with tests
+    return wait(2000);
   });
 
   afterEach(function () {
@@ -67,7 +68,7 @@ describe('HFs watcher event propagation', function () {
         .then(() => {
           hfs.on('file-created', (data) => {
             // path should be relative to the hfs root
-            data.path.should.equal('/somefile.md');
+            data.path.should.equal('/test-file.md');
             Object.keys(data).length.should.equal(1);
 
             wait(1000).then(() => {
@@ -77,14 +78,14 @@ describe('HFs watcher event propagation', function () {
           });
 
           allEventsBut('file-created').forEach((ev) => {
-            hfs.on(ev, (data) => {
+            hfs.once(ev, (data) => {
               done(new Error(ev + ' should not have been emitted'));
             });
           });
 
           // create a file within the root path of the hfs
           // using an external module
-          fse.writeFileSync(TMP_PATH + '/somefile.md', 'Some content');
+          fse.writeFileSync(TMP_PATH + '/test-file.md', 'Some content');
         });
     });
 
@@ -99,21 +100,21 @@ describe('HFs watcher event propagation', function () {
         .then(() => {
           hfs.on('file-created', (data) => {
             // path should be relative to the hfs root
-            data.path.should.equal('/somefile.md');
+            data.path.should.equal('/test-file.md');
             Object.keys(data).length.should.equal(1);
 
             fileCreatedEventCount += 1;
           });
 
           allEventsBut('file-created').forEach((ev) => {
-            hfs.on(ev, (data) => {
+            hfs.once(ev, (data) => {
               done(new Error(ev + ' should not have been emitted'));
             });
           });
 
           // create a file within the root path of the hfs
           // using an external module
-          hfs.createFile('/somefile.md', 'Some content')
+          hfs.createFile('/test-file.md', 'Some content')
             .then(() => {
               return wait(1000);
             })
@@ -132,6 +133,8 @@ describe('HFs watcher event propagation', function () {
     it('should emit `directory-created` events whenever an outer agent creates a directory', function (done) {
       var hfs = createHFs(TMP_PATH);
 
+      this.timeout(7000);
+
       hfs.startWatcher()
         .then(() => {
           hfs.on('directory-created', (data) => {
@@ -139,14 +142,22 @@ describe('HFs watcher event propagation', function () {
             data.path.should.equal('/somedir');
             Object.keys(data).length.should.equal(1);
 
-            wait(1000).then(() => {
-              hfs.destroyWatcher();
-              done();
-            });
+            wait(1000)
+              .then(() => {
+                hfs.destroyWatcher();
+                done();
+              });
           });
 
-          allEventsBut('directory-created').forEach((ev) => {
-            hfs.on(ev, (data) => {
+
+          // TODO: investigate weird behavior
+          // when trying to create a directory or file that exists
+          // that emits a delayed file-add and file-remove events
+          // to the fs watcher.
+          allEventsBut('directory-created').forEach(function (ev) {
+            hfs.once(ev, function (data) {
+              var errMsg = 'wrong: ' + ev + ':' + JSON.stringify(data);
+              console.log(errMsg);
               done(new Error(ev + ' should not have been emitted'));
             });
           });
@@ -179,7 +190,7 @@ describe('HFs watcher event propagation', function () {
           });
 
           allEventsBut('file-removed').forEach((ev) => {
-            hfs.on(ev, (data) => {
+            hfs.once(ev, (data) => {
               done(new Error(ev + ' should not have been emitted'));
             });
           });
@@ -212,7 +223,7 @@ describe('HFs watcher event propagation', function () {
           });
 
           allEventsBut('directory-removed').forEach((ev) => {
-            hfs.on(ev, (data) => {
+            hfs.once(ev, (data) => {
               done(new Error(ev + ' should not have been emitted'));
             });
           });
@@ -258,7 +269,7 @@ describe('HFs watcher event propagation', function () {
           });
 
           allEventsBut(['directory-removed', 'file-removed']).forEach((ev) => {
-            hfs.on(ev, (data) => {
+            hfs.once(ev, (data) => {
               done(new Error(ev + ' should not have been emitted'));
             });
           });
@@ -283,13 +294,13 @@ describe('HFs watcher event propagation', function () {
       var hfs = createHFs(TMP_PATH);
 
       // create a file that will be written to later
-      fse.writeFileSync(TMP_PATH + '/somefile.md', 'initial contents');
+      fse.writeFileSync(TMP_PATH + '/test-file.md', 'initial contents');
 
       hfs.startWatcher()
         .then(() => {
           hfs.on('file-updated', (data) => {
             // path should be relative to the hfs root
-            data.path.should.equal('/somefile.md');
+            data.path.should.equal('/test-file.md');
             Object.keys(data).length.should.equal(1);
 
             wait(1000).then(() => {
@@ -299,13 +310,13 @@ describe('HFs watcher event propagation', function () {
           });
 
           allEventsBut('file-updated').forEach((ev) => {
-            hfs.on(ev, (data) => {
+            hfs.once(ev, (data) => {
               done(new Error(ev + ' should not have been emitted'));
             });
           });
 
           // create a directory within the root path of the hfs
-          fse.writeFileSync(TMP_PATH + '/somefile.md', 'new contents');
+          fse.writeFileSync(TMP_PATH + '/test-file.md', 'new contents');
         });
     });
   });
