@@ -41,7 +41,7 @@ function allEventsBut(evList) {
   });
 }
 
-describe('HFs watcher event propagation', function () {
+describe.skip('HFs watcher event propagation', function () {
 
   beforeEach(function () {
     this.timeout(3000);
