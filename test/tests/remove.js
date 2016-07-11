@@ -48,6 +48,30 @@ describe('HFS#readFile(filepath)', function () {
         }
       });
   });
+
+  it('should require path as the first argument', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.remove()
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('InvalidOption');
+        err.option.should.equal('path');
+        err.kind.should.equal('required');
+      });
+  });
+
+  it('should not allow removing stuff outside the hfs\' root', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.remove('../')
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('IllegalPath');
+      });
+  });
   
   it('should emit a `file-removed` upon successful removal of a file\'s contents', function () {
     var hfs = createHFs(TMP_PATH);

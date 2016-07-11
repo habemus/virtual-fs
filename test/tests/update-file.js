@@ -43,6 +43,43 @@ describe('HFS#readFile(filepath)', function () {
           .should.equal('new file-1 contents');
       });
   });
+
+  it('should require filepath', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.updateFile(undefined, 'new file-1 contents')
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('InvalidOption');
+        err.option.should.equal('filepath');
+        err.kind.should.equal('required');
+      });
+  });
+
+  it('should require file contents not to be undefined', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.updateFile('/file-1', undefined)
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('InvalidOption');
+        err.option.should.equal('contents');
+        err.kind.should.equal('required');
+      });
+  });
+
+  it('should allow updating contents to an empty string', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.updateFile('/file-1', '')
+      .then(() => {
+
+        fse.readFileSync(TMP_PATH + '/file-1', 'utf8')
+          .should.equal('');
+      });
+  });
   
   it('should emit a `file-updated` event upon successful file update', function () {
     var hfs = createHFs(TMP_PATH)

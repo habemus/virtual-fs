@@ -34,6 +34,19 @@ describe('HFS#readFile(filepath)', function () {
   afterEach(function () {
     fse.emptyDirSync(TMP_PATH);
   });
+
+  it('should require filepath as the first argument', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.readFile()
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('InvalidOption');
+        err.kind.should.equal('required');
+        err.option.should.equal('filepath');
+      });
+  });
   
   it('should read the file\'s contents', function () {
     var hfs = createHFs(TMP_PATH)

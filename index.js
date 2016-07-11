@@ -1,10 +1,7 @@
 const HFs = require('./lib');
-const vroot = require('vroot');
 
 module.exports = function (rootPath, options) {
-  var vfs = vroot(rootPath, options);
-
-  return new HFs(vfs);
+  return new HFs(rootPath, options);
 };
 
 module.exports.HFs = HFs;

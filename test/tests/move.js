@@ -72,7 +72,9 @@ describe('HFS#move', function () {
     var hfs = createHFs(TMP_PATH);
 
     return hfs.move('', 'another-path')
-      .catch((err) => {
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
         err.name.should.equal('InvalidOption');
         err.option.should.equal('fromPath');
         err.kind.should.equal('required');
@@ -83,10 +85,35 @@ describe('HFS#move', function () {
     var hfs = createHFs(TMP_PATH);
 
     return hfs.move('/file-1', '')
-      .catch((err) => {
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
         err.name.should.equal('InvalidOption');
         err.option.should.equal('toPath');
         err.kind.should.equal('required');
+      });
+  });
+
+  it('should not be possible to move to a path outside the hfs\' root', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.move('/file-1', '../invalid-path')
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('IllegalPath');
+      });
+  });
+
+
+  it('should not be possible to move from a path outside the hfs\' root', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.move('../invalid-path.md', '/dir-1')
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('IllegalPath');
       });
   });
   

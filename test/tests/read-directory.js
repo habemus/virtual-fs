@@ -87,6 +87,19 @@ describe('HFS#readDirectory(dirpath)', function () {
         });
       });
   });
+
+  it('should require dirpath', function () {
+    var hfs = createHFs(TMP_PATH);
+
+    return hfs.readDirectory()
+      .then(() => {
+        return Bluebird.reject(new Error('error expected'));
+      }, (err) => {
+        err.name.should.equal('InvalidOption');
+        err.option.should.equal('dirpath');
+        err.kind.should.equal('required');
+      });
+  });
   
   it('should fail to read the contents of a directory that does not exist', function () {    
     var hfs = createHFs(TMP_PATH);
