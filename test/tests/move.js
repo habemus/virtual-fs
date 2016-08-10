@@ -288,4 +288,21 @@ describe('HFS#move', function () {
       })
   });
   
+  it('should be capable of changing the directory\'s name', function () {
+    
+    var hfs = createHFs(TMP_PATH);
+    
+    return hfs.move('/dir-1/dir-11', '/dir-1/dir-112')
+      .then(() => {
+        // `/another-dir` should have the original dir's contents
+        fse.readdirSync(TMP_PATH + '/dir-1/dir-112')
+          .should.eql(['file-111', 'file-112']);
+      })
+      .catch((err) => {
+        console.log(err);
+
+        return Bluebird.reject(err);
+      });
+  });
+  
 });
