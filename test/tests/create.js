@@ -99,8 +99,7 @@ describe('HFs create methods', function () {
       return hfs.createFile('somefile.md')
         .then(() => {
           throw new Error('expected error');
-        })
-        .catch((err) => {
+        }, (err) => {
           err.name.should.equal('PathExists');
           err.path.should.equal('/somefile.md');
         });
@@ -190,7 +189,24 @@ describe('HFs create methods', function () {
       // to the fs watcher.
 
       // ensure some file athe the target path
-      fse.ensureFileSync(TMP_PATH + '/some-existing-dir');
+      fse.ensureFileSync(TMP_PATH + '/some-existing-file');
+
+      return hfs.createDirectory('some-existing-file')
+        .then(() => {
+          throw new Error('expected error');
+        })
+        .catch((err) => {
+          err.name.should.equal('PathExists');
+          err.path.should.equal('/some-existing-file');
+        });
+    });
+
+    it('should fail to create a new directory if the path has another directory', function () {
+
+      var hfs = createHFs(TMP_PATH);
+
+      // ensure some file athe the target path
+      fse.ensureDirSync(TMP_PATH + '/some-existing-dir');
 
       return hfs.createDirectory('some-existing-dir')
         .then(() => {

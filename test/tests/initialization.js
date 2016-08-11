@@ -7,7 +7,6 @@ const http   = require('http');
 const should = require('should');
 const fse    = require('fs-extra');
 const Bluebird = require('bluebird');
-const vroot    = require('vroot');
 
 // the lib
 const createHFs = require('../../');
@@ -32,11 +31,6 @@ describe('HFs initialization', function () {
 
   it('should allow passing the rootPath string as the first argument', function () {
     var hfs = createHFs(TMP_PATH);
-  });
-
-  it('should allow passing an instance of vroot instead of the rootPath string as the first argument', function () {
-    var vfs = vroot(TMP_PATH);
-    var hfs = createHFs(vfs);
   });
 
 });
