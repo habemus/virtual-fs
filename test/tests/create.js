@@ -201,7 +201,7 @@ describe('HFs create methods', function () {
         });
     });
 
-    it('should fail to create a new directory if the path has another directory', function () {
+    it('should do nothing in case the path has another directory', function () {
 
       var hfs = createHFs(TMP_PATH);
 
@@ -210,11 +210,24 @@ describe('HFs create methods', function () {
 
       return hfs.createDirectory('some-existing-dir')
         .then(() => {
-          throw new Error('expected error');
-        })
-        .catch((err) => {
-          err.name.should.equal('PathExists');
-          err.path.should.equal('/some-existing-dir');
+          fse.statSync(TMP_PATH + '/some-existing-dir')
+            .isDirectory()
+            .should.equal(true);
+        });
+    });
+
+    it('should create all intermediary directories - like mkdirp', function () {
+      
+      var hfs = createHFs(TMP_PATH);
+
+      // ensure some file athe the target path
+      fse.ensureDirSync(TMP_PATH + '/some-existing-dir');
+
+      return hfs.createDirectory('some-existing-dir/some/deeper/dir')
+        .then(() => {
+          fse.statSync(TMP_PATH + '/some-existing-dir/some/deeper/dir')
+            .isDirectory()
+            .should.equal(true);
         });
     });
   });
