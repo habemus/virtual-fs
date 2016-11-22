@@ -121,6 +121,21 @@ describe('HFs create methods', function () {
           err.path.should.equal('/some-existing-dir');
         });
     });
+
+    it('should create all intermediary directories up to the path to the file', function () {
+      var hfs = createHFs(TMP_PATH);
+
+      return hfs.createFile('some/deep/directory/file.md', 'test contents')
+        .then(() => {
+
+          fse.readdirSync(TMP_PATH + '/some').should.eql(['deep']);
+          fse.readdirSync(TMP_PATH + '/some/deep').should.eql(['directory']);
+          fse.readdirSync(TMP_PATH + '/some/deep/directory').should.eql(['file.md']);
+
+          fse.readFileSync(TMP_PATH + '/some/deep/directory/file.md', 'utf8')
+            .should.equal('test contents');
+        });
+    });
   });
   
   describe('#createDirectory', function () {
@@ -201,7 +216,7 @@ describe('HFs create methods', function () {
         });
     });
 
-    it('should do nothing in case the path has another directory', function () {
+    it('should fail to create a new directory if the path has another directory', function () {
 
       var hfs = createHFs(TMP_PATH);
 
@@ -210,9 +225,12 @@ describe('HFs create methods', function () {
 
       return hfs.createDirectory('some-existing-dir')
         .then(() => {
-          fse.statSync(TMP_PATH + '/some-existing-dir')
-            .isDirectory()
-            .should.equal(true);
+
+          throw new Error('error expected');
+
+        }, (err) => {
+          err.name.should.equal('PathExists');
+          err.path.should.equal('/some-existing-dir');
         });
     });
 
